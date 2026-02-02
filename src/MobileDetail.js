@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './MobileDetail.css';
 
-// 프로젝트 데이터 (App.js와 동일)
+// 프로젝트 데이터
 const projects = [
   {
     id: 1,
@@ -80,23 +80,21 @@ function MobileDetail() {
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const sliderRef = useRef(null);
-  const [touchStart, setTouchStart] = useState(0);
+  
+  // 🔥 [수정] 슬라이더용 터치 state가 아니라, '엣지 스와이프'용 state만 사용
+  const [edgeStart, setEdgeStart] = useState(null);
 
   const project = projects.find(p => p.id === parseInt(id));
   const isVideo = (url) => url && url.match(/\.(mp4|webm|ogg|mov)$/i);
 
-  // 모든 이미지 수집
+  // 이미지 배열 합치기
   const allImages = [];
-  
-  if (project?.thumbnail) {
-    allImages.push(project.thumbnail);
-  }
-  
+  if (project?.thumbnail) allImages.push(project.thumbnail);
   if (project?.subImages && Array.isArray(project.subImages)) {
     allImages.push(...project.subImages);
   }
 
-  // 🔥 스크롤 이벤트 - 현재 인덱스 감지 (Hook을 최상단에 배치)
+  // 스크롤 감지 (인덱스 업데이트용 - 기존 로직 유지)
   useEffect(() => {
     const slider = sliderRef.current;
     if (!slider) return;
@@ -112,92 +110,75 @@ function MobileDetail() {
     };
 
     slider.addEventListener('scroll', handleScroll, { passive: true });
-    
-    return () => {
-      slider.removeEventListener('scroll', handleScroll);
-    };
+    return () => slider.removeEventListener('scroll', handleScroll);
   }, [currentIndex]);
 
-  // 🔥 터치 이벤트
-  const handleTouchStart = (e) => {
-    setTouchStart(e.touches[0].clientX);
+
+  // 🔥 [핵심 로직] 투명 벽(Edge Zone)에서만 작동하는 터치 이벤트
+  const handleEdgeTouchStart = (e) => {
+    // 터치한 X좌표 기억
+    setEdgeStart(e.touches[0].clientX);
   };
 
-  const handleTouchEnd = (e) => {
-    const touchEnd = e.changedTouches[0].clientX;
-    const distance = touchStart - touchEnd;
-    
-    // 오른쪽 스와이프 & 첫 이미지 = 닫기
-    if (distance < -100 && currentIndex === 0) {
-      navigate('/');
+  const handleEdgeTouchEnd = (e) => {
+    if (edgeStart === null) return;
+
+    const edgeEnd = e.changedTouches[0].clientX;
+    const distance = edgeEnd - edgeStart; // 끝점 - 시작점
+
+    // 오른쪽으로 50px 이상 밀었으면 닫기
+    // (조건: 왼쪽 끝에서 시작했으므로 currentIndex 상관없이 무조건 닫힘)
+    if (distance > 50) {
+      navigate('/'); // 메인으로 돌아가기
     }
+    
+    // 초기화
+    setEdgeStart(null);
   };
 
-  // 🔥 프로젝트가 없을 때만 early return
-  if (!project) {
-    return (
-      <div className="mobile-detail">
-        <header className="mobile-detail-header">
-          <div className="mobile-logo" onClick={() => navigate('/')}>
-            ESSENT.STUDIO
-          </div>
-        </header>
-        <div style={{ padding: '20px', textAlign: 'center' }}>
-          <h2>Project not found</h2>
-          <button onClick={() => navigate('/')}>Go Home</button>
-        </div>
-      </div>
-    );
-  }
+  // 프로젝트 없음 예외처리
+  if (!project) return null;
 
   return (
-    <div className="mobile-detail">
+    <div className="mobile-detail-container mobile-detail-overlay">
+      
+      {/* 🔥 [추가] 여기가 투명 벽입니다! (슬라이더보다 위에 있음) */}
+      <div 
+        className="edge-swipe-zone"
+        onTouchStart={handleEdgeTouchStart}
+        onTouchEnd={handleEdgeTouchEnd}
+      />
+
       <header className="mobile-detail-header">
         <div className="mobile-logo" onClick={() => navigate('/')}>
           ESSENT.STUDIO
         </div>
       </header>
 
+      {/* 슬라이더 영역 (이제 여기에 터치 이벤트를 넣지 않습니다!) */}
       <div 
         ref={sliderRef}
         className="mobile-slider-wrapper"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
       >
         <div className="mobile-slider-track">
           {allImages.length === 0 ? (
             <div className="mobile-slide">
-              <div style={{ color: '#999', textAlign: 'center' }}>
-                No images available
-              </div>
+              <div style={{ color: '#999' }}>No images</div>
             </div>
           ) : (
             allImages.map((media, idx) => (
-              <div 
-                key={idx} 
-                className="mobile-slide"
-              >
+              <div key={idx} className="mobile-slide">
                 {isVideo(media) ? (
-                  <video 
-                    src={media} 
-                    autoPlay 
-                    muted 
-                    loop 
-                    playsInline
-                  />
+                  <video src={media} autoPlay muted loop playsInline />
                 ) : (
-                  <img 
-                    src={media} 
-                    alt={`${project.title} ${idx + 1}`}
-                    draggable="false"
-                  />
+                  <img src={media} alt={`Slide ${idx}`} draggable="false" />
                 )}
               </div>
             ))
           )}
         </div>
 
-        {/* 🔥 Pagination Dots */}
+        {/* 페이지네이션 닷 */}
         <div className="mobile-pagination">
           {allImages.map((_, idx) => (
             <div 
@@ -211,8 +192,13 @@ function MobileDetail() {
       <div className="mobile-info">
         <h2>{project.title}</h2>
         <p className="mobile-year">{project.year}</p>
-        <p className="mobile-category">{project.category.toUpperCase()}</p>
+        <p className="mobile-category">{project.category?.toUpperCase()}</p>
         <p className="mobile-description">{project.description}</p>
+        
+        {/* 메타 정보 (CSS에는 있는데 JS에는 없어서 추가해둠 - 필요시 사용) */}
+        <div className="mobile-meta">
+           {/* 필요한 정보 추가 가능 */}
+        </div>
       </div>
     </div>
   );
