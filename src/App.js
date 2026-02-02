@@ -450,7 +450,7 @@ function MobileDetailOverlay({ project, onClose }) {
     if (currentIndex === 0 && sliderRef.current) {
       const scrollLeft = sliderRef.current.scrollLeft;
       
-      if (scrollLeft <= 10) {
+      if (scrollLeft <= 50) {
         const touchEnd = {
           x: e.changedTouches[0].clientX,
           y: e.changedTouches[0].clientY
@@ -459,9 +459,9 @@ function MobileDetailOverlay({ project, onClose }) {
         const distanceX = touchStart.x - touchEnd.x;
         const distanceY = touchStart.y - touchEnd.y;
         
-        const isHorizontalSwipe = Math.abs(distanceX) > Math.abs(distanceY) * 2;
+        const isHorizontalSwipe = Math.abs(distanceX) > Math.abs(distanceY) * 1.5;
         
-        if (isHorizontalSwipe && distanceX < -100) {
+        if (isHorizontalSwipe && distanceX < -70) {
           handleClose();
         }
       }
