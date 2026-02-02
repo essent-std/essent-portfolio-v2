@@ -1,3 +1,24 @@
+/* 🔥 iOS Safari UI 컨트롤 숨기기 */
+.mobile-detail-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh; /* 동적 viewport 높이 */
+  background: #000;
+  z-index: 201;
+  animation: slideInFromRight 0.3s ease-out;
+  overflow: hidden;
+  
+  /* iOS 최적화 */
+  -webkit-overflow-scrolling: touch;
+  transform: translate3d(0, 0, 0);
+-webkit-transform: translate3d(0, 0, 0);
+  overscroll-behavior: none;
+}
+
+
 /* 🔥 Mobile Detail Overlay */
 .mobile-detail-overlay {
   position: fixed;
@@ -196,8 +217,8 @@
   line-height: 1.6;
   color: #ccc;
   margin: 0 0 20px 0;
-  /* 🔥 텍스트가 길면 말줄임표 */
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
