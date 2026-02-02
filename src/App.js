@@ -13,7 +13,7 @@ import { db } from './firebase';
 import Login from './Login';
 
 // ==============================================================================
-// 1. MainPage 컴포넌트
+// 1. MainPage 컴포넌트입니다
 // ==============================================================================
 function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) {
   const navigate = useNavigate();
