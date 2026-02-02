@@ -392,18 +392,30 @@ function MobileDetailOverlay({ project, onClose }) {
     allImages.push(...project.subImages);
   }
 
-  // 🔥 스크롤 후 자동으로 가장 가까운 이미지로 스냅
+  // 🔥 브라우저 뒤로가기 방지
+  useEffect(() => {
+    const preventBack = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    // 터치 이벤트로 브라우저 제스처 막기
+    window.addEventListener('touchstart', preventBack, { passive: false });
+    
+    return () => {
+      window.removeEventListener('touchstart', preventBack);
+    };
+  }, []);
+
   const handleScroll = (e) => {
     const scrollLeft = e.target.scrollLeft;
     const itemWidth = e.target.offsetWidth;
     const index = Math.round(scrollLeft / itemWidth);
     
-    // 인덱스 업데이트
     if (index !== currentIndex) {
       setCurrentIndex(index);
     }
 
-    // 🔥 스크롤 멈추면 자동 스냅
     if (scrollTimeout.current) {
       clearTimeout(scrollTimeout.current);
     }
@@ -416,7 +428,7 @@ function MobileDetailOverlay({ project, onClose }) {
           behavior: 'smooth'
         });
       }
-    }, 150); // 150ms 후 스냅
+    }, 150);
   };
 
   const handleClose = () => {
@@ -426,9 +438,23 @@ function MobileDetailOverlay({ project, onClose }) {
     }, 300);
   };
 
+  // 🔥 터치 이벤트 - preventDefault 추가
   const handleTouchStart = (e) => {
     if (currentIndex === 0) {
       setTouchStart(e.touches[0].clientX);
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    // 🔥 첫 이미지에서 오른쪽 스와이프 시 브라우저 제스처 막기
+    if (currentIndex === 0 && touchStart > 0) {
+      const touchCurrent = e.touches[0].clientX;
+      const distance = touchStart - touchCurrent;
+      
+      // 오른쪽으로 밀 때만 브라우저 제스처 막기
+      if (distance < 0) {
+        e.preventDefault();
+      }
     }
   };
 
@@ -449,6 +475,7 @@ function MobileDetailOverlay({ project, onClose }) {
     <div 
       className={`mobile-detail-overlay ${isClosing ? 'closing' : ''}`}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       <div className="mobile-detail-container">
