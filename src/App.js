@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import './App.css';
 import './Mobile.css';
@@ -13,7 +13,7 @@ import { db } from './firebase';
 import Login from './Login';
 
 // ==============================================================================
-// 1. MainPage 컴포넌트입니다
+// 1. MainPage 컴포넌트
 // ==============================================================================
 function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) {
   const navigate = useNavigate();
@@ -373,28 +373,36 @@ function MobileDetailOverlay({ project, onClose }) {
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [isClosing, setIsClosing] = useState(false);
   const scrollTimeout = useRef(null);
-  const rafId = useRef(null); // 🔥 requestAnimationFrame ID
+  const rafId = useRef(null);
 
-  const isVideo = (url) => url && url.match(/\.(mp4|webm|ogg|mov)$/i);
+  // 🔥 useCallback으로 감싸기
+  const isVideo = useCallback((url) => {
+    return url && url.match(/\.(mp4|webm|ogg|mov)$/i);
+  }, []);
   
-  const allImages = [];
-  
-  if (project?.thumbnail) {
-    allImages.push(project.thumbnail);
-  } else if (project?.imageUrl) {
-    if (Array.isArray(project.imageUrl)) {
-      allImages.push(...project.imageUrl);
-    } else {
-      allImages.push(project.imageUrl);
+  // 🔥 useMemo로 감싸기
+  const allImages = useMemo(() => {
+    const images = [];
+    
+    if (project?.thumbnail) {
+      images.push(project.thumbnail);
+    } else if (project?.imageUrl) {
+      if (Array.isArray(project.imageUrl)) {
+        images.push(...project.imageUrl);
+      } else {
+        images.push(project.imageUrl);
+      }
     }
-  }
-  
-  if (project?.subImages && Array.isArray(project.subImages)) {
-    allImages.push(...project.subImages);
-  }
+    
+    if (project?.subImages && Array.isArray(project.subImages)) {
+      images.push(...project.subImages);
+    }
+    
+    return images;
+  }, [project]);
 
   // 🔥 스크롤 최적화 - requestAnimationFrame 사용
-  const handleScroll = (e) => {
+  const handleScroll = useCallback((e) => {
     if (rafId.current) {
       cancelAnimationFrame(rafId.current);
     }
@@ -422,23 +430,23 @@ function MobileDetailOverlay({ project, onClose }) {
         }
       }, 150);
     });
-  };
+  }, [currentIndex]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
       onClose();
     }, 300);
-  };
+  }, [onClose]);
 
-  const handleTouchStart = (e) => {
+  const handleTouchStart = useCallback((e) => {
     setTouchStart({
       x: e.touches[0].clientX,
       y: e.touches[0].clientY
     });
-  };
+  }, []);
 
-  const handleTouchEnd = (e) => {
+  const handleTouchEnd = useCallback((e) => {
     if (currentIndex === 0 && sliderRef.current) {
       const scrollLeft = sliderRef.current.scrollLeft;
       
@@ -460,7 +468,7 @@ function MobileDetailOverlay({ project, onClose }) {
     }
     
     setTouchStart({ x: 0, y: 0 });
-  };
+  }, [currentIndex, touchStart, handleClose]);
 
   // 🔥 클린업
   useEffect(() => {
@@ -482,7 +490,7 @@ function MobileDetailOverlay({ project, onClose }) {
         img.src = src;
       }
     });
-  }, []);
+  }, [allImages, isVideo]);
 
   return (
     <div 
