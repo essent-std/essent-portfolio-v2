@@ -392,21 +392,6 @@ function MobileDetailOverlay({ project, onClose }) {
     allImages.push(...project.subImages);
   }
 
-  // 🔥 브라우저 뒤로가기 방지
-  useEffect(() => {
-    const preventBack = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    };
-
-    // 터치 이벤트로 브라우저 제스처 막기
-    window.addEventListener('touchstart', preventBack, { passive: false });
-    
-    return () => {
-      window.removeEventListener('touchstart', preventBack);
-    };
-  }, []);
-
   const handleScroll = (e) => {
     const scrollLeft = e.target.scrollLeft;
     const itemWidth = e.target.offsetWidth;
@@ -438,37 +423,38 @@ function MobileDetailOverlay({ project, onClose }) {
     }, 300);
   };
 
-  // 🔥 터치 이벤트 - preventDefault 추가
+  // 🔥 터치 이벤트 - 첫 이미지 + 맨 왼쪽일 때만 제스처 막기
   const handleTouchStart = (e) => {
-    if (currentIndex === 0) {
-      setTouchStart(e.touches[0].clientX);
-    }
+    setTouchStart(e.touches[0].clientX);
   };
 
   const handleTouchMove = (e) => {
-    // 🔥 첫 이미지에서 오른쪽 스와이프 시 브라우저 제스처 막기
-    if (currentIndex === 0 && touchStart > 0) {
+    // 🔥 첫 이미지 + 스크롤이 맨 왼쪽일 때만 브라우저 제스처 막기
+    if (currentIndex === 0 && sliderRef.current) {
+      const scrollLeft = sliderRef.current.scrollLeft;
       const touchCurrent = e.touches[0].clientX;
       const distance = touchStart - touchCurrent;
       
-      // 오른쪽으로 밀 때만 브라우저 제스처 막기
-      if (distance < 0) {
+      // 스크롤이 맨 왼쪽(0) + 오른쪽으로 스와이프할 때만 막기
+      if (scrollLeft === 0 && distance < 0) {
         e.preventDefault();
       }
     }
   };
 
   const handleTouchEnd = (e) => {
-    if (currentIndex === 0) {
+    if (currentIndex === 0 && sliderRef.current) {
+      const scrollLeft = sliderRef.current.scrollLeft;
       const touchEnd = e.changedTouches[0].clientX;
       const distance = touchStart - touchEnd;
       
-      if (distance < -100) {
+      // 맨 왼쪽에서 오른쪽 스와이프 = 닫기
+      if (scrollLeft === 0 && distance < -100) {
         handleClose();
       }
-      
-      setTouchStart(0);
     }
+    
+    setTouchStart(0);
   };
 
   return (
