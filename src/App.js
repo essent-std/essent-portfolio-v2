@@ -370,8 +370,7 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
 function MobileDetailOverlay({ project, onClose }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const sliderRef = useRef(null);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchStartY, setTouchStartY] = useState(0);
+  const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [isClosing, setIsClosing] = useState(false);
   const scrollTimeout = useRef(null);
 
@@ -424,54 +423,47 @@ function MobileDetailOverlay({ project, onClose }) {
     }, 300);
   };
 
-  // 🔥 오버레이 전체 터치 (브라우저 제스처 막기)
-  const handleOverlayTouchStart = (e) => {
-    setTouchStart(e.touches[0].clientX);
-    setTouchStartY(e.touches[0].clientY);
+  // 🔥 터치 시작
+  const handleTouchStart = (e) => {
+    setTouchStart({
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY
+    });
   };
 
-  const handleOverlayTouchMove = (e) => {
-    const touchCurrentX = e.touches[0].clientX;
-    const touchCurrentY = e.touches[0].clientY;
-    const distanceX = touchStart - touchCurrentX;
-    const distanceY = touchStartY - touchCurrentY;
-    
-    // 🔥 가로 스와이프가 세로보다 크면 (가로 제스처)
-    if (Math.abs(distanceX) > Math.abs(distanceY)) {
-      // 오른쪽 스와이프 (브라우저 뒤로가기) 막기
-      if (distanceX < 0) {
-        e.preventDefault();
-      }
-    }
-  };
-
-  const handleOverlayTouchEnd = (e) => {
+  // 🔥 터치 끝 - 가로 스와이프만 감지
+  const handleTouchEnd = (e) => {
+    // 첫 이미지 + 맨 왼쪽일 때만
     if (currentIndex === 0 && sliderRef.current) {
       const scrollLeft = sliderRef.current.scrollLeft;
-      const touchEnd = e.changedTouches[0].clientX;
-      const distance = touchStart - touchEnd;
       
-      // 맨 왼쪽에서 오른쪽 스와이프 = 닫기
-      if (scrollLeft <= 10 && distance < -100) {
-        handleClose();
+      if (scrollLeft <= 10) {
+        const touchEnd = {
+          x: e.changedTouches[0].clientX,
+          y: e.changedTouches[0].clientY
+        };
+        
+        const distanceX = touchStart.x - touchEnd.x;
+        const distanceY = touchStart.y - touchEnd.y;
+        
+        // 🔥 가로 이동이 세로 이동보다 훨씬 큰지 확인
+        const isHorizontalSwipe = Math.abs(distanceX) > Math.abs(distanceY) * 2;
+        
+        // 🔥 가로 스와이프 + 오른쪽 방향 + 100px 이상
+        if (isHorizontalSwipe && distanceX < -100) {
+          handleClose();
+        }
       }
     }
     
-    setTouchStart(0);
-    setTouchStartY(0);
-  };
-
-  // 🔥 슬라이더 터치 (스크롤 허용)
-  const handleSliderTouchStart = (e) => {
-    e.stopPropagation(); // 오버레이 이벤트 전파 막기
+    setTouchStart({ x: 0, y: 0 });
   };
 
   return (
     <div 
       className={`mobile-detail-overlay ${isClosing ? 'closing' : ''}`}
-      onTouchStart={handleOverlayTouchStart}
-      onTouchMove={handleOverlayTouchMove}
-      onTouchEnd={handleOverlayTouchEnd}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       <div className="mobile-detail-container">
         <header className="mobile-detail-header">
@@ -484,7 +476,6 @@ function MobileDetailOverlay({ project, onClose }) {
           ref={sliderRef}
           className="mobile-slider-wrapper"
           onScroll={handleScroll}
-          onTouchStart={handleSliderTouchStart}
         >
           <div className="mobile-slider-track">
             {allImages.length === 0 ? (
