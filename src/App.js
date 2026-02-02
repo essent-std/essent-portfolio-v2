@@ -393,7 +393,7 @@ function MobileDetailOverlay({ project, onClose }) {
     return images;
   }, [project]);
 
-  // 🔥 스크롤 이벤트 - CSS 스냅 사용하므로 인덱스만 추적
+  // 🔥 스크롤 이벤트 - 인덱스만 추적
   const handleScroll = useCallback((e) => {
     if (rafId.current) {
       cancelAnimationFrame(rafId.current);
@@ -425,11 +425,11 @@ function MobileDetailOverlay({ project, onClose }) {
   }, []);
 
   const handleTouchEnd = useCallback((e) => {
+    // 🔥 첫 이미지에서만 닫기 (원래대로)
     if (currentIndex === 0 && sliderRef.current) {
       const scrollLeft = sliderRef.current.scrollLeft;
       
-      // 🔥 구역 확대: 100px
-      if (scrollLeft <= 100) {
+      if (scrollLeft <= 50) {  // 🔥 원래 조건으로 복구
         const touchEnd = {
           x: e.changedTouches[0].clientX,
           y: e.changedTouches[0].clientY
