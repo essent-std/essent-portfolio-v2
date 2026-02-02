@@ -155,7 +155,6 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
           ) : (
             <div className="masonry-grid">
               {filteredProjects.map((project) => {
-                // 🔥 이미지 개수 계산
                 const imageCount = (() => {
                   let count = 0;
                   if (project.thumbnail) count++;
@@ -406,23 +405,33 @@ function MobileDetailOverlay({ project, onClose }) {
     }, 300);
   };
 
+  // 🔥 전체 화면 터치 이벤트 (첫 이미지일 때만)
   const handleTouchStart = (e) => {
-    setTouchStart(e.touches[0].clientX);
+    if (currentIndex === 0) {
+      setTouchStart(e.touches[0].clientX);
+    }
   };
 
   const handleTouchEnd = (e) => {
-    const touchEnd = e.changedTouches[0].clientX;
-    const distance = touchStart - touchEnd;
-    
-    if (distance < -100 && currentIndex === 0) {
-      handleClose();
+    if (currentIndex === 0) {
+      const touchEnd = e.changedTouches[0].clientX;
+      const distance = touchStart - touchEnd;
+      
+      // 🔥 오른쪽 스와이프 (100px 이상) = 닫기
+      if (distance < -100) {
+        handleClose();
+      }
+      
+      setTouchStart(0);
     }
-    
-    setTouchStart(0);
   };
 
   return (
-    <div className={`mobile-detail-overlay ${isClosing ? 'closing' : ''}`}>
+    <div 
+      className={`mobile-detail-overlay ${isClosing ? 'closing' : ''}`}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="mobile-detail-container">
         <header className="mobile-detail-header">
           <div className="mobile-logo" onClick={handleClose}>
@@ -434,8 +443,6 @@ function MobileDetailOverlay({ project, onClose }) {
           ref={sliderRef}
           className="mobile-slider-wrapper"
           onScroll={handleScroll}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
         >
           <div className="mobile-slider-track">
             {allImages.length === 0 ? (
@@ -459,7 +466,6 @@ function MobileDetailOverlay({ project, onClose }) {
           </div>
         </div>
 
-        {/* 🔥 Pagination Dots */}
         {allImages.length > 1 && (
           <div className="mobile-pagination">
             {allImages.map((_, idx) => (
