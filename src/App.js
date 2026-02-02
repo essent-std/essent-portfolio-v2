@@ -420,15 +420,23 @@ function MobileDetailOverlay({ project, onClose }) {
         clearTimeout(scrollTimeout.current);
       }
 
-      scrollTimeout.current = setTimeout(() => {
-        const targetScroll = index * itemWidth;
-        if (sliderRef.current) {
-          sliderRef.current.scrollTo({
-            left: targetScroll,
-            behavior: 'smooth'
-          });
-        }
-      }, 150);
+      // 🔥 이 setTimeout 부분 전체 삭제 (CSS 스냅이 알아서 함)
+const handleScroll = useCallback((e) => {
+  if (rafId.current) {
+    cancelAnimationFrame(rafId.current);
+  }
+
+  rafId.current = requestAnimationFrame(() => {
+    const scrollLeft = e.target.scrollLeft;
+    const itemWidth = e.target.offsetWidth;
+    const index = Math.round(scrollLeft / itemWidth);
+    
+    if (index !== currentIndex) {
+      setCurrentIndex(index);
+    }
+    // 🔥 setTimeout 삭제!
+  });
+}, [currentIndex]);
     });
   }, [currentIndex]);
 
@@ -450,7 +458,7 @@ function MobileDetailOverlay({ project, onClose }) {
     if (currentIndex === 0 && sliderRef.current) {
       const scrollLeft = sliderRef.current.scrollLeft;
       
-      if (scrollLeft <= 50) {
+      if (scrollLeft <= 100) {
         const touchEnd = {
           x: e.changedTouches[0].clientX,
           y: e.changedTouches[0].clientY

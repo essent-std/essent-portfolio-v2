@@ -153,7 +153,7 @@
   height: calc(70vh - 60px);
   overflow-x: scroll;
   overflow-y: hidden;
-  scroll-snap-type: none;
+  scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   background: #000;
   scroll-behavior: auto;
@@ -198,15 +198,13 @@
   align-items: center;
   justify-content: center;
   background: #000;
-  
-  /* 🔥 개별 레이어 */
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
   will-change: transform;
   transform: translate3d(0, 0, 0);
   -webkit-transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  
-  /* 🔥 컨테인먼트 */
   contain: layout style paint;
 }
 
