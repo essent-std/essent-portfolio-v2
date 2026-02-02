@@ -336,16 +336,4 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}/* ... 기존 CSS 코드들 맨 아래에 추가 ... */
-
-/* 🔥 [추가] 인스타그램 스타일 뒤로가기 영역 (투명 벽) */
-.edge-swipe-zone {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 40px; /* 왼쪽 40px 영역 차지 */
-  height: 100%;
-  z-index: 9999; /* 모든 것보다 위에 떠 있음 */
-  background: transparent; /* 투명해서 안 보임 */
-  touch-action: pan-x; /* 좌우 스와이프 허용 */
 }
