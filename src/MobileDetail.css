@@ -1,3 +1,34 @@
+/* 🔥 더 강력한 제스처 막기 */
+.mobile-detail-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  
+  /* 모든 스크롤 막기 */
+  overflow: hidden;
+  overscroll-behavior: none;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
+  
+  /* 터치 완전 제어 */
+  touch-action: none;
+  -webkit-overflow-scrolling: auto;
+  
+  /* 뷰포트 고정 */
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* 슬라이더만 터치 허용 */
+.mobile-slider-wrapper {
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+
+
 /* 🔥 Mobile Detail Overlay - 최적화 */
 .mobile-detail-overlay {
   position: fixed;
