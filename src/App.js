@@ -373,6 +373,7 @@ function MobileDetailOverlay({ project, onClose }) {
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [isClosing, setIsClosing] = useState(false);
   const scrollTimeout = useRef(null);
+  const rafId = useRef(null); // 🔥 requestAnimationFrame ID
 
   const isVideo = (url) => url && url.match(/\.(mp4|webm|ogg|mov)$/i);
   
@@ -392,28 +393,35 @@ function MobileDetailOverlay({ project, onClose }) {
     allImages.push(...project.subImages);
   }
 
+  // 🔥 스크롤 최적화 - requestAnimationFrame 사용
   const handleScroll = (e) => {
-    const scrollLeft = e.target.scrollLeft;
-    const itemWidth = e.target.offsetWidth;
-    const index = Math.round(scrollLeft / itemWidth);
-    
-    if (index !== currentIndex) {
-      setCurrentIndex(index);
+    if (rafId.current) {
+      cancelAnimationFrame(rafId.current);
     }
 
-    if (scrollTimeout.current) {
-      clearTimeout(scrollTimeout.current);
-    }
-
-    scrollTimeout.current = setTimeout(() => {
-      const targetScroll = index * itemWidth;
-      if (sliderRef.current) {
-        sliderRef.current.scrollTo({
-          left: targetScroll,
-          behavior: 'smooth'
-        });
+    rafId.current = requestAnimationFrame(() => {
+      const scrollLeft = e.target.scrollLeft;
+      const itemWidth = e.target.offsetWidth;
+      const index = Math.round(scrollLeft / itemWidth);
+      
+      if (index !== currentIndex) {
+        setCurrentIndex(index);
       }
-    }, 150);
+
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+
+      scrollTimeout.current = setTimeout(() => {
+        const targetScroll = index * itemWidth;
+        if (sliderRef.current) {
+          sliderRef.current.scrollTo({
+            left: targetScroll,
+            behavior: 'smooth'
+          });
+        }
+      }, 150);
+    });
   };
 
   const handleClose = () => {
@@ -423,7 +431,6 @@ function MobileDetailOverlay({ project, onClose }) {
     }, 300);
   };
 
-  // 🔥 터치 시작
   const handleTouchStart = (e) => {
     setTouchStart({
       x: e.touches[0].clientX,
@@ -431,9 +438,7 @@ function MobileDetailOverlay({ project, onClose }) {
     });
   };
 
-  // 🔥 터치 끝 - 가로 스와이프만 감지
   const handleTouchEnd = (e) => {
-    // 첫 이미지 + 맨 왼쪽일 때만
     if (currentIndex === 0 && sliderRef.current) {
       const scrollLeft = sliderRef.current.scrollLeft;
       
@@ -446,10 +451,8 @@ function MobileDetailOverlay({ project, onClose }) {
         const distanceX = touchStart.x - touchEnd.x;
         const distanceY = touchStart.y - touchEnd.y;
         
-        // 🔥 가로 이동이 세로 이동보다 훨씬 큰지 확인
         const isHorizontalSwipe = Math.abs(distanceX) > Math.abs(distanceY) * 2;
         
-        // 🔥 가로 스와이프 + 오른쪽 방향 + 100px 이상
         if (isHorizontalSwipe && distanceX < -100) {
           handleClose();
         }
@@ -458,6 +461,28 @@ function MobileDetailOverlay({ project, onClose }) {
     
     setTouchStart({ x: 0, y: 0 });
   };
+
+  // 🔥 클린업
+  useEffect(() => {
+    return () => {
+      if (rafId.current) {
+        cancelAnimationFrame(rafId.current);
+      }
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+    };
+  }, []);
+
+  // 🔥 이미지 프리로드
+  useEffect(() => {
+    allImages.forEach((src) => {
+      if (!isVideo(src)) {
+        const img = new Image();
+        img.src = src;
+      }
+    });
+  }, []);
 
   return (
     <div 
@@ -489,9 +514,21 @@ function MobileDetailOverlay({ project, onClose }) {
                   className="mobile-slide"
                 >
                   {isVideo(media) ? (
-                    <video src={media} autoPlay muted loop playsInline />
+                    <video 
+                      src={media} 
+                      autoPlay 
+                      muted 
+                      loop 
+                      playsInline
+                      preload="metadata"
+                    />
                   ) : (
-                    <img src={media} alt={`${idx + 1}`} draggable="false" />
+                    <img 
+                      src={media} 
+                      alt={`${idx + 1}`} 
+                      draggable="false"
+                      loading={idx === 0 ? "eager" : "lazy"}
+                    />
                   )}
                 </div>
               ))
