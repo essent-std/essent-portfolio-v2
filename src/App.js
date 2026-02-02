@@ -22,7 +22,6 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
   const [searchTerm, setSearchTerm] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   
-  // 🔥 모바일 디테일 오버레이용
   const [selectedProject, setSelectedProject] = useState(null);
 
   const [form, setForm] = useState({ name: '', content: '', email: '' });
@@ -90,7 +89,6 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
     return categoryMatch && searchMatch;
   });
 
-  // 🔥 카드 클릭 핸들러
   const handleCardClick = (project) => {
     if (window.innerWidth <= 768) {
       setSelectedProject(project);
@@ -116,7 +114,6 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
         
         <div className="lets-talk">Let's Talk</div>
         
-        {/* 🔥 햄버거 메뉴 - selectedProject에도 반응 */}
         <div 
           className={`hamburger-menu ${menuOpen || selectedProject ? 'open' : ''}`}
           onClick={() => {
@@ -186,7 +183,6 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
                       />
                     )}
                     
-                    {/* 🔥 레이어 아이콘 - 메인 페이지 카드에만 (768px 이하) */}
                     {imageCount > 1 && window.innerWidth <= 768 && (
                       <div style={{
                         position: 'absolute',
@@ -353,7 +349,6 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
         </div>
       </div>
 
-      {/* 🔥 모바일 디테일 오버레이 */}
       {selectedProject && (
         <MobileDetailOverlay 
           project={selectedProject} 
@@ -372,15 +367,12 @@ function MobileDetailOverlay({ project, onClose }) {
   const sliderRef = useRef(null);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [isClosing, setIsClosing] = useState(false);
-  const scrollTimeout = useRef(null);
   const rafId = useRef(null);
 
-  // 🔥 useCallback으로 감싸기
   const isVideo = useCallback((url) => {
     return url && url.match(/\.(mp4|webm|ogg|mov)$/i);
   }, []);
   
-  // 🔥 useMemo로 감싸기
   const allImages = useMemo(() => {
     const images = [];
     
@@ -401,7 +393,7 @@ function MobileDetailOverlay({ project, onClose }) {
     return images;
   }, [project]);
 
-  // 🔥 스크롤 최적화 - requestAnimationFrame 사용
+  // 🔥 스크롤 이벤트 - CSS 스냅 사용하므로 인덱스만 추적
   const handleScroll = useCallback((e) => {
     if (rafId.current) {
       cancelAnimationFrame(rafId.current);
@@ -415,28 +407,6 @@ function MobileDetailOverlay({ project, onClose }) {
       if (index !== currentIndex) {
         setCurrentIndex(index);
       }
-
-      if (scrollTimeout.current) {
-        clearTimeout(scrollTimeout.current);
-      }
-
-      // 🔥 이 setTimeout 부분 전체 삭제 (CSS 스냅이 알아서 함)
-const handleScroll = useCallback((e) => {
-  if (rafId.current) {
-    cancelAnimationFrame(rafId.current);
-  }
-
-  rafId.current = requestAnimationFrame(() => {
-    const scrollLeft = e.target.scrollLeft;
-    const itemWidth = e.target.offsetWidth;
-    const index = Math.round(scrollLeft / itemWidth);
-    
-    if (index !== currentIndex) {
-      setCurrentIndex(index);
-    }
-    // 🔥 setTimeout 삭제!
-  });
-}, [currentIndex]);
     });
   }, [currentIndex]);
 
@@ -458,6 +428,7 @@ const handleScroll = useCallback((e) => {
     if (currentIndex === 0 && sliderRef.current) {
       const scrollLeft = sliderRef.current.scrollLeft;
       
+      // 🔥 구역 확대: 100px
       if (scrollLeft <= 100) {
         const touchEnd = {
           x: e.changedTouches[0].clientX,
@@ -478,19 +449,14 @@ const handleScroll = useCallback((e) => {
     setTouchStart({ x: 0, y: 0 });
   }, [currentIndex, touchStart, handleClose]);
 
-  // 🔥 클린업
   useEffect(() => {
     return () => {
       if (rafId.current) {
         cancelAnimationFrame(rafId.current);
       }
-      if (scrollTimeout.current) {
-        clearTimeout(scrollTimeout.current);
-      }
     };
   }, []);
 
-  // 🔥 이미지 프리로드
   useEffect(() => {
     allImages.forEach((src) => {
       if (!isVideo(src)) {
