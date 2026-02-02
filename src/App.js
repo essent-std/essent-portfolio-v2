@@ -155,6 +155,7 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
           ) : (
             <div className="masonry-grid">
               {filteredProjects.map((project) => {
+                // 🔥 이미지 개수 계산
                 const imageCount = (() => {
                   let count = 0;
                   if (project.thumbnail) count++;
@@ -186,7 +187,8 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
                       />
                     )}
                     
-                    {imageCount > 1 && window.innerWidth <= 393 && (
+                    {/* 🔥 레이어 아이콘 - 메인 페이지 카드에만 (768px 이하) */}
+                    {imageCount > 1 && window.innerWidth <= 768 && (
                       <div style={{
                         position: 'absolute',
                         top: '10px',
@@ -195,7 +197,7 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
                       }}>
                         <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                           <defs>
-                            <mask id="card-mask">
+                            <mask id={`card-mask-${project.id}`}>
                               <rect width="20" height="20" fill="white"/>
                               <rect x="-1" y="-1" width="15" height="15" rx="3" fill="black"/>
                             </mask>
@@ -207,8 +209,8 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
                             width="13" 
                             height="13" 
                             rx="2.5" 
-                            fill="rgba(255, 255, 255, 100)"
-                            mask="url(#card-mask)"
+                            fill="rgba(255, 255, 255, 0.8)"
+                            mask={`url(#card-mask-${project.id})`}
                             style={{filter: 'drop-shadow(0 1px 3px rgba(0, 0, 0, 0.15))'}}
                           />
                           
@@ -390,7 +392,6 @@ function MobileDetailOverlay({ project, onClose }) {
     allImages.push(...project.subImages);
   }
 
-  // 🔥 스크롤로 현재 인덱스 추적
   const handleScroll = (e) => {
     const scrollLeft = e.target.scrollLeft;
     const itemWidth = e.target.offsetWidth;
@@ -405,7 +406,6 @@ function MobileDetailOverlay({ project, onClose }) {
     }, 300);
   };
 
-  // 🔥 닫기 감지만
   const handleTouchStart = (e) => {
     setTouchStart(e.touches[0].clientX);
   };
@@ -459,7 +459,7 @@ function MobileDetailOverlay({ project, onClose }) {
           </div>
         </div>
 
-        {/* 🔥 Pagination - wrapper 밖으로 이동 (fixed) */}
+        {/* 🔥 Pagination Dots */}
         {allImages.length > 1 && (
           <div className="mobile-pagination">
             {allImages.map((_, idx) => (
@@ -502,15 +502,16 @@ function MobileDetailOverlay({ project, onClose }) {
     </div>
   );
 }
+
 // ==============================================================================
 // DetailRouter 컴포넌트
 // ==============================================================================
 function DetailRouter() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 393);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 393);
+      setIsMobile(window.innerWidth <= 768);
     };
 
     window.addEventListener('resize', handleResize);

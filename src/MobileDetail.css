@@ -36,15 +36,16 @@
 .mobile-detail-container {
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
   background: #000;
   overflow: hidden;
+  /* 🔥 모든 스크롤 막기 */
+  position: fixed;
+  touch-action: none;
 }
 
 /* Header */
 .mobile-detail-header {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -54,6 +55,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  pointer-events: none;
 }
 
 .mobile-logo {
@@ -62,11 +64,12 @@
   letter-spacing: 1.5px;
   cursor: pointer;
   color: #fff;
+  pointer-events: auto;
 }
 
-/* 🔥 Image Slider - 상단에 더 가깝게 */
+/* 🔥 Image Slider */
 .mobile-slider-wrapper {
-  position: absolute;
+  position: fixed;
   top: 60px;
   left: 0;
   right: 0;
@@ -76,6 +79,16 @@
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   background: #000;
+  
+  /* 🔥 부드러운 스크롤 */
+  scroll-behavior: smooth;
+  
+  /* 성능 최적화 */
+  will-change: scroll-position;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   
   /* 스크롤바 숨기기 */
   -ms-overflow-style: none;
@@ -101,9 +114,14 @@
   justify-content: center;
   background: #000;
   
-  /* 스냅 포인트 */
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+  /* 🔥 부드러운 스냅 */
+  scroll-snap-align: center;
+  scroll-snap-stop: normal;
+  
+  /* 성능 최적화 */
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
 }
 
 .mobile-slide img,
@@ -116,9 +134,14 @@
   user-select: none;
   -webkit-user-select: none;
   pointer-events: none;
+  
+  /* 🔥 이미지 렌더링 최적화 */
+  image-rendering: -webkit-optimize-contrast;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
-/* 🔥 Pagination Dots - fixed로 변경 */
+/* 🔥 Pagination Dots */
 .mobile-pagination {
   position: fixed;
   bottom: calc(30vh + 20px);
@@ -143,18 +166,21 @@
   transform: scale(1.3);
 }
 
-/* Project Info - 하단 30% */
+/* 🔥 Project Info - 완전 고정 */
 .mobile-info {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   height: 30vh;
   padding: 20px;
+  padding-bottom: env(safe-area-inset-bottom, 20px);
   background: #000;
   z-index: 5;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
+  /* 🔥 완전 고정, 스크롤 불가 */
+  touch-action: none;
+  pointer-events: auto;
 }
 
 .mobile-info h1 {
@@ -170,6 +196,11 @@
   line-height: 1.6;
   color: #ccc;
   margin: 0 0 20px 0;
+  /* 🔥 텍스트가 길면 말줄임표 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .mobile-meta {
