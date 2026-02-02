@@ -372,6 +372,7 @@ function MobileDetailOverlay({ project, onClose }) {
   const sliderRef = useRef(null);
   const [touchStart, setTouchStart] = useState(0);
   const [isClosing, setIsClosing] = useState(false);
+  const scrollTimeout = useRef(null);
 
   const isVideo = (url) => url && url.match(/\.(mp4|webm|ogg|mov)$/i);
   
@@ -391,11 +392,31 @@ function MobileDetailOverlay({ project, onClose }) {
     allImages.push(...project.subImages);
   }
 
+  // 🔥 스크롤 후 자동으로 가장 가까운 이미지로 스냅
   const handleScroll = (e) => {
     const scrollLeft = e.target.scrollLeft;
     const itemWidth = e.target.offsetWidth;
     const index = Math.round(scrollLeft / itemWidth);
-    setCurrentIndex(index);
+    
+    // 인덱스 업데이트
+    if (index !== currentIndex) {
+      setCurrentIndex(index);
+    }
+
+    // 🔥 스크롤 멈추면 자동 스냅
+    if (scrollTimeout.current) {
+      clearTimeout(scrollTimeout.current);
+    }
+
+    scrollTimeout.current = setTimeout(() => {
+      const targetScroll = index * itemWidth;
+      if (sliderRef.current) {
+        sliderRef.current.scrollTo({
+          left: targetScroll,
+          behavior: 'smooth'
+        });
+      }
+    }, 150); // 150ms 후 스냅
   };
 
   const handleClose = () => {
@@ -405,7 +426,6 @@ function MobileDetailOverlay({ project, onClose }) {
     }, 300);
   };
 
-  // 🔥 전체 화면 터치 이벤트 (첫 이미지일 때만)
   const handleTouchStart = (e) => {
     if (currentIndex === 0) {
       setTouchStart(e.touches[0].clientX);
@@ -417,7 +437,6 @@ function MobileDetailOverlay({ project, onClose }) {
       const touchEnd = e.changedTouches[0].clientX;
       const distance = touchStart - touchEnd;
       
-      // 🔥 오른쪽 스와이프 (100px 이상) = 닫기
       if (distance < -100) {
         handleClose();
       }
