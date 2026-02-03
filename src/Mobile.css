@@ -87,20 +87,62 @@
     background: transparent !important; border-bottom: 1px solid #555 !important; padding: 8px 0 !important;
   }
 
-  /* 5️⃣ 그리드 & 카드 */
+  /* ========================================================
+     5️⃣ 그리드 & 카드 (🔥 A시리즈 비율 적용)
+     ======================================================== */
   .masonry-grid {
-    column-count: 2 !important; column-gap: 12px !important; padding: 0 16px 40px 16px !important; margin-top: 6px !important;
+    column-count: 2 !important; 
+    column-gap: 12px !important; 
+    padding: 0 16px 40px 16px !important; 
+    margin-top: 6px !important;
   }
-  .project-card { margin-bottom: 12px; position: relative; transition: transform 0.1s ease-in-out !important; }
-  .project-card:active { transform: scale(0.96) !important; }
-  .card-overlay { display: none !important; }
-  .project-card:active .card-overlay, .project-card:hover .card-overlay { opacity: 1 !important; }
-  .card-overlay h3 { font-size: 20px; margin-bottom: 5px; }
-  .card-overlay p { font-size: 14px; color: #ccc; }
+
+  .project-card { 
+    margin-bottom: 12px; 
+    position: relative; 
+    transition: transform 0.1s ease-in-out !important;
+    break-inside: avoid;
+    /* 🔥 높이 자동 조절 */
+    width: 100%;
+  }
+
+  .project-card:active { 
+    transform: scale(0.96) !important; 
+  }
+
+  /* 🔥 이미지 비율 유지 + A시리즈 최대 높이 */
+  .project-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    /* 🔥 A시리즈 최대 높이 제한 */
+    max-height: calc((100vw - 32px - 12px) / 2 * 1.414);
+    object-fit: contain;
+    background: #1a1a1a;
+  }
+
+  .card-overlay { 
+    display: none !important; 
+  }
+
+  .project-card:active .card-overlay, 
+  .project-card:hover .card-overlay { 
+    opacity: 1 !important; 
+  }
+
+  .card-overlay h3 { 
+    font-size: 20px; 
+    margin-bottom: 5px; 
+  }
+
+  .card-overlay p { 
+    font-size: 14px; 
+    color: #ccc; 
+  }
 
 
   /* ========================================================
-     6️⃣ 모바일 메뉴 & 오버레이 (문법 오류 수정됨 & 여백 조절)
+     6️⃣ 모바일 메뉴 & 오버레이
      ======================================================== */
   
   .mobile-menu-overlay {
@@ -112,124 +154,143 @@
     height: 100vh;
     background-color: #121212; 
     z-index: 200 !important; 
-    
-    /* 👇 [조절 포인트] 여기를 수정하면 전체 여백이 바뀝니다! 
-       순서: 위(80px) 오른쪽(20px) 아래(20px) 왼쪽(20px)
-       현재 아래쪽 여백을 20px로 확 줄였습니다.
-    */
     padding: 52px 20px 0px 20px;
-    
     overflow-y: auto;
     opacity: 0;
     visibility: hidden;
     transition: 0.3s;
-    
-    /* 스크롤바 숨기기 */
     -ms-overflow-style: none; 
     scrollbar-width: none;
   }
   
-  /* 중첩되지 않게 밖으로 뺌 */
-  .mobile-menu-overlay::-webkit-scrollbar { display: none; }
-  .mobile-menu-overlay.open { opacity: 1 !important; visibility: visible !important; }
-  
-  /* ========================================================
-     🎨 [수정] 모바일 메뉴 타이틀 & 줄 긋기
-     ======================================================== */
-  
-  .mobile-menu-title {
-    /* 1️⃣ 글자 크기 조절 */
-    font-size: 20px;       /* 숫자를 키우면 글자가 커집니다 */
-    font-weight: 500;      /* 글자 두께 (400: 얇게, 600: 두껍게) */
-    color: #fff;           /* 글자 색상 */
-
-    /* 2️⃣ 얇은 줄 (노란색으로 표시하신 부분) */
-    border-bottom: 1px solid #333;  /* 1px: 줄 두께, #333: 줄 색상 (어두운 회색) */
-    
-    margin-left: -20px;   /* 왼쪽으로 20px 당김 */
-    margin-right: -20px;  /* 오른쪽으로 20px 당김 */
-    
-    /* 텍스트는 다시 안쪽으로 20px 밀어넣어야 화면 끝에 안 붙습니다 */
-    padding-left: 20px;   
-    padding-right: 20px;
-
-    padding-bottom: 20px;  /* 15px -> 20px 추천 (더 넓게) */
-    
-    /* B. 줄과 그 아래 본문(Essent는...) 사이의 간격 */
-    margin-bottom: 30px;   /* 25px -> 30px 추천 */
-    
-    /* C. 글자 위쪽 여백 (필요하면 조절) */
-    padding-top: 10px;
-
-    /* 3️⃣ 줄 기준 위/아래 여백 조절 */
-    padding-bottom: 12px;  /* 글자와 줄 사이의 간격 */
-    margin-bottom: 25px;   /* 줄과 그 아래 본문(Essent는...) 사이의 간격 */
-    
-    /* (옵션) 텍스트 정렬 */
-    /* text-align: center; */ /* 가운데 정렬하려면 주석을 해제하세요 */
+  .mobile-menu-overlay::-webkit-scrollbar { 
+    display: none; 
   }
 
-  /* 4️⃣ 본문 글자 크기 조절 (Let's Talk 아래 설명글) */
+  .mobile-menu-overlay.open { 
+    opacity: 1 !important; 
+    visibility: visible !important; 
+  }
+  
+  /* 모바일 메뉴 타이틀 */
+  .mobile-menu-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #fff;
+    border-bottom: 1px solid #333;
+    margin-left: -20px;
+    margin-right: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+    padding-top: 10px;
+  }
+
+  /* 본문 글자 */
   .intro-text p {
-    font-size: 15px;       /* 본문 글자 크기 */
-    line-height: 1.6;      /* 줄 간격 (숫자가 클수록 줄 사이가 벌어짐) */
-    margin-bottom: 20px;   /* 문단 사이 간격 */
-    color: #ededed;        /* 본문 색상 */
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: #ededed;
   }
 
   /* 폼 헤더 */
   .form-header-area {
-    display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px;
-  }
-  .form-header-area h3 { font-size: 20px; font-weight: 500; margin: 0; }
-  .form-submit-btn {
-    padding: 6px 16px; border: 1px solid #666; background: transparent;
-    color: #fff; border-radius: 50px; font-size: 14px; cursor: pointer;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    border-bottom: 1px solid #333; 
+    padding-bottom: 10px; 
+    margin-bottom: 20px;
   }
 
-  /* 입력창 스타일 */
-  .contact-form-area .input-group { margin-bottom: 20px; }
+  .form-header-area h3 { 
+    font-size: 20px; 
+    font-weight: 500; 
+    margin: 0; 
+  }
+
+  .form-submit-btn {
+    padding: 6px 16px; 
+    border: 1px solid #666; 
+    background: transparent;
+    color: #fff; 
+    border-radius: 50px; 
+    font-size: 14px; 
+    cursor: pointer;
+  }
+
+  /* 입력창 */
+  .contact-form-area .input-group { 
+    margin-bottom: 20px; 
+  }
   
-  /* 🔥 [조절 포인트] 마지막 입력칸(EMAIL) 아래 여백을 0으로 만듦 */
   .contact-form-area .input-group:last-child {
     margin-bottom: 0 !important;
   }
   
-  .contact-form-area .form-label { display: block; margin-bottom: 8px; font-size: 14px; color: #ccc; }
+  .contact-form-area .form-label { 
+    display: block; 
+    margin-bottom: 8px; 
+    font-size: 14px; 
+    color: #ccc; 
+  }
+
   .contact-form-area .form-input, 
   .contact-form-area .form-textarea {
-    width: 100%; background-color: #1c1c1c !important; border: none !important;
-    padding: 12px; color: white; font-size: 15px;
+    width: 100%; 
+    background-color: #1c1c1c !important; 
+    border: none !important;
+    padding: 12px; 
+    color: white; 
+    font-size: 15px;
   }
-  .contact-form-area .form-textarea { height: 120px; resize: none; }
+
+  .contact-form-area .form-textarea { 
+    height: 120px; 
+    resize: none; 
+  }
 
 
   /* 7️⃣ 모바일 푸터 */
   .mobile-footer-content {
-    display: block !important; background-color: #121212 !important;
-    padding: 60px 20px 80px 20px; border-top: none !important;
+    display: block !important; 
+    background-color: #121212 !important;
+    padding: 60px 20px 80px 20px; 
+    border-top: none !important;
   }
+
   .mobile-footer-content .intro-text p {
-    font-size: 15px; line-height: 1.6; margin-bottom: 20px; color: #ededed;
+    font-size: 15px; 
+    line-height: 1.6; 
+    margin-bottom: 20px; 
+    color: #ededed;
   }
   
   /* 8️⃣ 스크롤바 삭제 */
-  body, html { -ms-overflow-style: none; scrollbar-width: none; }
-  body::-webkit-scrollbar, html::-webkit-scrollbar { display: none; }
+  body, html { 
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
+  }
 
-} /* 미디어 쿼리 닫힘 *//* 기존 모바일 반응형 부분 찾아서 추가 */
+  body::-webkit-scrollbar, 
+  html::-webkit-scrollbar { 
+    display: none; 
+  }
+
+} /* 미디어 쿼리 닫힘 */
+
+/* 추가 모바일 최적화 */
 @media (max-width: 460px) {
-  
-  /* 기존 코드들... */
   
   /* 🔥 모바일에서 호버 효과 제거 */
   .project-card:hover .project-img { 
-    filter: none !important; /* 어둡게 안 됨 */
+    filter: none !important;
   }
 
   .project-card:hover .card-overlay { 
-    opacity: 0 !important; /* 오버레이 안 보임 */
+    opacity: 0 !important;
   }
 
   /* 🔥 카드 오버레이 완전 숨김 */
