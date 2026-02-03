@@ -151,28 +151,34 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
             <div style={{padding: '40px', textAlign: 'center', color: '#888'}}>{searchTerm ? '검색 결과가 없습니다.' : '아직 프로젝트가 없습니다.'}</div>
           ) : (
             <div className="masonry-grid">
-              {filteredProjects.map((project) => {
-                const imageCount = (() => {
-                  let count = 0;
-                  if (project.thumbnail) count++;
-                  else if (project.imageUrl) {
-                    count += Array.isArray(project.imageUrl) ? project.imageUrl.length : 1;
-                  }
-                  if (project.subImages && Array.isArray(project.subImages)) {
-                    count += project.subImages.length;
-                  }
-                  return count;
-                })();
+  {filteredProjects.map((project, index) => {
+    // 🔥 Firebase에서 type 가져오기 (없으면 tall)
+    const projectType = project.type || 'tall';
+    
+    const imageCount = (() => {
+      let count = 0;
+      if (project.thumbnail) count++;
+      else if (project.imageUrl) {
+        count += Array.isArray(project.imageUrl) ? project.imageUrl.length : 1;
+      }
+      if (project.subImages && Array.isArray(project.subImages)) {
+        count += project.subImages.length;
+      }
+      return count;
+    })();
 
-                return (
-                  <div className="project-card" key={project.id} onClick={() => handleCardClick(project)}>
+    return (
+      <div 
+        className={`project-card ${projectType}`}  // 🔥 Firebase type 사용!
+        key={project.id} 
+        onClick={() => handleCardClick(project)}
+      >
                     {project.thumbnail && isVideo(project.thumbnail) ? (
                       <video 
                         src={project.thumbnail}
                         className="project-img"
                         autoPlay muted loop playsInline
                         preload="metadata"
-                        style={{ objectFit: 'cover' }}
                       />
                     ) : (
                       <img 
@@ -393,7 +399,6 @@ function MobileDetailOverlay({ project, onClose }) {
     return images;
   }, [project]);
 
-  // 🔥 스크롤 이벤트 - 인덱스만 추적
   const handleScroll = useCallback((e) => {
     if (rafId.current) {
       cancelAnimationFrame(rafId.current);
@@ -425,11 +430,10 @@ function MobileDetailOverlay({ project, onClose }) {
   }, []);
 
   const handleTouchEnd = useCallback((e) => {
-    // 🔥 첫 이미지에서만 닫기 (원래대로)
     if (currentIndex === 0 && sliderRef.current) {
       const scrollLeft = sliderRef.current.scrollLeft;
       
-      if (scrollLeft <= 50) {  // 🔥 원래 조건으로 복구
+      if (scrollLeft <= 50) {
         const touchEnd = {
           x: e.changedTouches[0].clientX,
           y: e.changedTouches[0].clientY

@@ -1,8 +1,6 @@
 @media (max-width: 768px) {
 
-  /* ========================================================
-     1️⃣ 헤더 & 로고 & 스위치
-     ======================================================== */
+  /* 1️⃣ 헤더 */
   .header {
     position: fixed !important; 
     top: 0;
@@ -32,7 +30,6 @@
   .lets-talk { display: none !important; }
   .right-sidebar { display: none !important; }
 
-  /* 햄버거 메뉴 */
   .hamburger-menu {
     display: flex !important;
     flex-direction: column;
@@ -44,6 +41,7 @@
     cursor: pointer;
     z-index: 206 !important; 
   }
+
   .hamburger-menu span {
     width: 24px;
     height: 2px;
@@ -52,99 +50,149 @@
     transform-origin: center; 
   }
   
-  /* X 모양 변환 */
   .hamburger-menu.open span:nth-child(1) { transform: translateY(4px) rotate(45deg); }
   .hamburger-menu.open span:nth-child(2) { transform: translateY(-4px) rotate(-45deg); }
 
-
-  /* 2️⃣ 레이아웃 초기화 */
+  /* 2️⃣ 레이아웃 */
   .container { flex-direction: column; padding-top: 50px; }
   .left-content { width: 100%; border-right: none; height: auto; overflow: visible; }
 
   /* 3️⃣ 메뉴바 */
   .sub-header {
-    position: fixed !important; top: 50px !important; left: 0; width: 100%; z-index: 90 !important;
-    height: 40px !important; min-height: 28px !important; padding: 0 20px !important; 
-    display: flex !important; align-items: center !important;
+    position: fixed !important; 
+    top: 50px !important; 
+    left: 0; 
+    width: 100%; 
+    z-index: 90 !important;
+    height: 40px !important; 
+    padding: 0 20px !important; 
+    display: flex !important; 
+    align-items: center !important;
     background-color: rgba(18, 18, 18, 0.8) !important;
-    backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
   }
+
   .filter-bar {
-    display: flex; align-items: center; height: 100%; overflow-x: auto; white-space: nowrap;
-    gap: 15px; font-size: 18px !important; -webkit-overflow-scrolling: touch;
+    display: flex; 
+    align-items: center; 
+    height: 100%; 
+    overflow-x: auto; 
+    white-space: nowrap;
+    gap: 15px; 
+    font-size: 18px !important;
   }
+
   .filter-bar::-webkit-scrollbar { display: none; }
 
-  /* 4️⃣ 검색창 & 타이틀 */
+  /* 4️⃣ 검색창 */
   .title-area {
-    display: flex !important; flex-direction: column-reverse !important; align-items: flex-start !important;
-    padding: 0 20px 10px 20px !important; margin-top: 40px !important; 
+    display: flex !important; 
+    flex-direction: column-reverse !important; 
+    align-items: flex-start !important;
+    padding: 0 20px 10px 20px !important; 
+    margin-top: 40px !important; 
   }
-  .title-area h1 { font-size: 24px !important; margin-bottom: 0 !important; margin-top: 40px !important; }
+
+  .title-area h1 { 
+    font-size: 24px !important; 
+    margin-bottom: 0 !important; 
+    margin-top: 40px !important; 
+  }
+
   .search-input {
-    width: 100% !important; margin-bottom: 0 !important; font-size: 18px;
-    background: transparent !important; border-bottom: 1px solid #555 !important; padding: 8px 0 !important;
+    width: 100% !important; 
+    margin-bottom: 0 !important; 
+    font-size: 18px;
+    background: transparent !important; 
+    border-bottom: 1px solid #555 !important; 
+    padding: 8px 0 !important;
   }
 
   /* ========================================================
-     5️⃣ 그리드 & 카드 (🔥 A시리즈 비율 적용)
-     ======================================================== */
-  .masonry-grid {
-    column-count: 2 !important; 
-    column-gap: 12px !important; 
-    padding: 0 16px 40px 16px !important; 
-    margin-top: 6px !important;
-  }
+   5️⃣ 그리드 & 카드 (🔥 실제 이미지)
+   ======================================================== */
+.masonry-grid {
+  column-count: 2 !important; 
+  column-gap: 12px !important; 
+  padding: 0 16px 40px 16px !important; 
+  margin-top: 6px !important;
+}
 
-  .project-card { 
-    margin-bottom: 12px; 
-    position: relative; 
-    transition: transform 0.1s ease-in-out !important;
-    break-inside: avoid;
-    /* 🔥 높이 자동 조절 */
-    width: 100%;
-  }
+.project-card { 
+  margin-bottom: 12px; 
+  position: relative; 
+  transition: transform 0.1s ease-in-out !important;
+  break-inside: avoid;
+  width: 100%;
+  overflow: hidden;
+}
 
-  .project-card:active { 
-    transform: scale(0.96) !important; 
-  }
+.project-card:active { 
+  transform: scale(0.96) !important; 
+}
 
-  /* 🔥 이미지 비율 유지 + A시리즈 최대 높이 */
-  .project-img {
-    width: 100%;
-    height: auto;
-    display: block;
-    /* 🔥 A시리즈 최대 높이 제한 */
-    max-height: calc((100vw - 32px - 12px) / 2 * 1.414);
-    object-fit: contain;
-    background: #1a1a1a;
-  }
+/* 🔥 실제 이미지 표시 */
+.project-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
 
-  .card-overlay { 
-    display: none !important; 
-  }
+/* 🟥 가로형 (2:1) */
+.project-card.wide {
+  aspect-ratio: 2 / 1;
+}
 
-  .project-card:active .card-overlay, 
-  .project-card:hover .card-overlay { 
-    opacity: 1 !important; 
-  }
+.project-card.wide .project-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
-  .card-overlay h3 { 
-    font-size: 20px; 
-    margin-bottom: 5px; 
-  }
+/* 🟨 정사각형 (1:1) */
+.project-card.square {
+  aspect-ratio: 1 / 1;
+}
 
-  .card-overlay p { 
-    font-size: 14px; 
-    color: #ccc; 
-  }
+.project-card.square .project-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
+/* 🟩 세로형 A4 (1:1.414) */
+.project-card.tall {
+  aspect-ratio: 1 / 1.414;
+}
 
-  /* ========================================================
-     6️⃣ 모바일 메뉴 & 오버레이
-     ======================================================== */
-  
+.project-card.tall .project-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 타입 없는 경우 기본값 (세로) */
+.project-card:not(.wide):not(.square):not(.tall) {
+  aspect-ratio: 1 / 1.414;
+}
+
+.card-overlay { 
+  display: none !important; 
+}
+
+.card-overlay h3 { 
+  font-size: 20px; 
+  margin-bottom: 5px; 
+}
+
+.card-overlay p { 
+  font-size: 14px; 
+  color: #ccc; 
+}
+
+  /* 6️⃣ 모바일 메뉴 */
   .mobile-menu-overlay {
     display: block !important;
     position: fixed;
@@ -159,20 +207,12 @@
     opacity: 0;
     visibility: hidden;
     transition: 0.3s;
-    -ms-overflow-style: none; 
     scrollbar-width: none;
   }
   
-  .mobile-menu-overlay::-webkit-scrollbar { 
-    display: none; 
-  }
-
-  .mobile-menu-overlay.open { 
-    opacity: 1 !important; 
-    visibility: visible !important; 
-  }
+  .mobile-menu-overlay::-webkit-scrollbar { display: none; }
+  .mobile-menu-overlay.open { opacity: 1 !important; visibility: visible !important; }
   
-  /* 모바일 메뉴 타이틀 */
   .mobile-menu-title {
     font-size: 20px;
     font-weight: 500;
@@ -187,7 +227,6 @@
     padding-top: 10px;
   }
 
-  /* 본문 글자 */
   .intro-text p {
     font-size: 15px;
     line-height: 1.6;
@@ -195,7 +234,6 @@
     color: #ededed;
   }
 
-  /* 폼 헤더 */
   .form-header-area {
     display: flex; 
     justify-content: space-between; 
@@ -205,11 +243,7 @@
     margin-bottom: 20px;
   }
 
-  .form-header-area h3 { 
-    font-size: 20px; 
-    font-weight: 500; 
-    margin: 0; 
-  }
+  .form-header-area h3 { font-size: 20px; font-weight: 500; margin: 0; }
 
   .form-submit-btn {
     padding: 6px 16px; 
@@ -221,21 +255,9 @@
     cursor: pointer;
   }
 
-  /* 입력창 */
-  .contact-form-area .input-group { 
-    margin-bottom: 20px; 
-  }
-  
-  .contact-form-area .input-group:last-child {
-    margin-bottom: 0 !important;
-  }
-  
-  .contact-form-area .form-label { 
-    display: block; 
-    margin-bottom: 8px; 
-    font-size: 14px; 
-    color: #ccc; 
-  }
+  .contact-form-area .input-group { margin-bottom: 20px; }
+  .contact-form-area .input-group:last-child { margin-bottom: 0 !important; }
+  .contact-form-area .form-label { display: block; margin-bottom: 8px; font-size: 14px; color: #ccc; }
 
   .contact-form-area .form-input, 
   .contact-form-area .form-textarea {
@@ -247,11 +269,7 @@
     font-size: 15px;
   }
 
-  .contact-form-area .form-textarea { 
-    height: 120px; 
-    resize: none; 
-  }
-
+  .contact-form-area .form-textarea { height: 120px; resize: none; }
 
   /* 7️⃣ 모바일 푸터 */
   .mobile-footer-content {
@@ -269,32 +287,13 @@
   }
   
   /* 8️⃣ 스크롤바 삭제 */
-  body, html { 
-    -ms-overflow-style: none; 
-    scrollbar-width: none; 
-  }
+  body, html { scrollbar-width: none; }
+  body::-webkit-scrollbar, html::-webkit-scrollbar { display: none; }
 
-  body::-webkit-scrollbar, 
-  html::-webkit-scrollbar { 
-    display: none; 
-  }
+}
 
-} /* 미디어 쿼리 닫힘 */
-
-/* 추가 모바일 최적화 */
 @media (max-width: 460px) {
-  
-  /* 🔥 모바일에서 호버 효과 제거 */
-  .project-card:hover .project-img { 
-    filter: none !important;
-  }
-
-  .project-card:hover .card-overlay { 
-    opacity: 0 !important;
-  }
-
-  /* 🔥 카드 오버레이 완전 숨김 */
-  .card-overlay {
-    display: none !important;
-  }
+  .project-card:hover .project-img { filter: none !important; }
+  .project-card:hover .card-overlay { opacity: 0 !important; }
+  .card-overlay { display: none !important; }
 }
