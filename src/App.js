@@ -82,16 +82,26 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
   const currentCategories = mode === 'Std' ? categoriesStd : categoriesLab;
   const modeFilteredProjects = firestoreProjects.filter(p => p.mode === mode);
   
-  const filteredProjects = modeFilteredProjects.filter(project => {
-    const categoryMatch = category === 'All Project' || project.category === category;
-    const searchMatch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       (project.sub && project.sub.toLowerCase().includes(searchTerm.toLowerCase()));
-    return categoryMatch && searchMatch;
-  });
+  const filteredProjects = modeFilteredProjects
+    .filter(project => {
+      const categoryMatch = category === 'All Project' || project.category === category;
+      const searchMatch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (project.sub && project.sub.toLowerCase().includes(searchTerm.toLowerCase()));
+      return categoryMatch && searchMatch;
+    })
+    .sort((a, b) => {
+      const dateA = a.date || '0';
+      const dateB = b.date || '0';
+      return dateB.localeCompare(dateA);
+    });
 
-  const handleCardClick = (project) => {
+  const handleCardClick = (project, projectIndex) => {
     if (window.innerWidth <= 768) {
-      setSelectedProject(project);
+      setSelectedProject({
+        ...project,
+        currentIndex: projectIndex,
+        allProjects: filteredProjects
+      });
     } else {
       navigate(`/project/${project.id}`, { state: { project } });
     }
@@ -99,7 +109,10 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
 
   return (
     <div className="App">
-      <header className="header">
+      <header 
+        className={`header ${selectedProject ? 'detail-open' : ''}`}
+        style={{ zIndex: selectedProject ? 300 : 205 }}
+      >
         <div className="logo" onClick={handleReset}>ESSENT.STUDIO</div>
         
         <div className="nav-switch" style={{ 
@@ -151,28 +164,27 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
             <div style={{padding: '40px', textAlign: 'center', color: '#888'}}>{searchTerm ? '검색 결과가 없습니다.' : '아직 프로젝트가 없습니다.'}</div>
           ) : (
             <div className="masonry-grid">
-  {filteredProjects.map((project, index) => {
-    // 🔥 Firebase에서 type 가져오기 (없으면 tall)
-    const projectType = project.type || 'tall';
-    
-    const imageCount = (() => {
-      let count = 0;
-      if (project.thumbnail) count++;
-      else if (project.imageUrl) {
-        count += Array.isArray(project.imageUrl) ? project.imageUrl.length : 1;
-      }
-      if (project.subImages && Array.isArray(project.subImages)) {
-        count += project.subImages.length;
-      }
-      return count;
-    })();
+              {filteredProjects.map((project, index) => {
+                const projectType = project.type || 'tall';
+                
+                const imageCount = (() => {
+                  let count = 0;
+                  if (project.thumbnail) count++;
+                  else if (project.imageUrl) {
+                    count += Array.isArray(project.imageUrl) ? project.imageUrl.length : 1;
+                  }
+                  if (project.subImages && Array.isArray(project.subImages)) {
+                    count += project.subImages.length;
+                  }
+                  return count;
+                })();
 
-    return (
-      <div 
-        className={`project-card ${projectType}`}  // 🔥 Firebase type 사용!
-        key={project.id} 
-        onClick={() => handleCardClick(project)}
-      >
+                return (
+                  <div 
+                    className={`project-card ${projectType}`}
+                    key={project.id} 
+                    onClick={() => handleCardClick(project, index)}
+                  >
                     {project.thumbnail && isVideo(project.thumbnail) ? (
                       <video 
                         src={project.thumbnail}
@@ -366,19 +378,19 @@ function MainPage({ firestoreProjects, loading, categoriesStd, categoriesLab }) 
 }
 
 // ==============================================================================
-// 🔥 모바일 디테일 오버레이 컴포넌트
+// 🔥 모바일 디테일 오버레이
 // ==============================================================================
 function MobileDetailOverlay({ project, onClose }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const sliderRef = useRef(null);
-  const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+  const infoSectionRef = useRef(null);
   const [isClosing, setIsClosing] = useState(false);
-  const rafId = useRef(null);
+  const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
+  const [showFixedInfo, setShowFixedInfo] = useState(true);
 
   const isVideo = useCallback((url) => {
     return url && url.match(/\.(mp4|webm|ogg|mov)$/i);
   }, []);
-  
+
   const allImages = useMemo(() => {
     const images = [];
     
@@ -399,22 +411,6 @@ function MobileDetailOverlay({ project, onClose }) {
     return images;
   }, [project]);
 
-  const handleScroll = useCallback((e) => {
-    if (rafId.current) {
-      cancelAnimationFrame(rafId.current);
-    }
-
-    rafId.current = requestAnimationFrame(() => {
-      const scrollLeft = e.target.scrollLeft;
-      const itemWidth = e.target.offsetWidth;
-      const index = Math.round(scrollLeft / itemWidth);
-      
-      if (index !== currentIndex) {
-        setCurrentIndex(index);
-      }
-    });
-  }, [currentIndex]);
-
   const handleClose = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => {
@@ -430,36 +426,52 @@ function MobileDetailOverlay({ project, onClose }) {
   }, []);
 
   const handleTouchEnd = useCallback((e) => {
-    if (currentIndex === 0 && sliderRef.current) {
-      const scrollLeft = sliderRef.current.scrollLeft;
-      
-      if (scrollLeft <= 50) {
-        const touchEnd = {
-          x: e.changedTouches[0].clientX,
-          y: e.changedTouches[0].clientY
-        };
-        
-        const distanceX = touchStart.x - touchEnd.x;
-        const distanceY = touchStart.y - touchEnd.y;
-        
-        const isHorizontalSwipe = Math.abs(distanceX) > Math.abs(distanceY) * 1.5;
-        
-        if (isHorizontalSwipe && distanceX < -70) {
-          handleClose();
-        }
-      }
+    const container = containerRef.current;
+    if (!container) return;
+
+    const touchEnd = {
+      x: e.changedTouches[0].clientX,
+      y: e.changedTouches[0].clientY
+    };
+
+    const distanceX = touchStart.x - touchEnd.x;
+    const distanceY = touchStart.y - touchEnd.y;
+
+    const isAtTop = container.scrollTop <= 10;
+    const isHorizontalSwipe = Math.abs(distanceX) > Math.abs(distanceY) * 1.5;
+
+    if (isAtTop && isHorizontalSwipe && distanceX < -70) {
+      handleClose();
     }
-    
+
     setTouchStart({ x: 0, y: 0 });
-  }, [currentIndex, touchStart, handleClose]);
+  }, [touchStart, handleClose]);
+
+  // 🔥 스크롤 핸들러 - 정보섹션이 화면에 보이면 블러박스 숨김
+  const handleScroll = useCallback(() => {
+    const container = containerRef.current;
+    const infoSection = infoSectionRef.current;
+    if (!container || !infoSection) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const infoRect = infoSection.getBoundingClientRect();
+    
+    // 정보섹션 상단이 화면 하단에 닿으면 블러박스 숨김
+    if (infoRect.top <= containerRect.bottom) {
+      setShowFixedInfo(false);
+    } else {
+      setShowFixedInfo(true);
+    }
+  }, []);
 
   useEffect(() => {
-    return () => {
-      if (rafId.current) {
-        cancelAnimationFrame(rafId.current);
-      }
-    };
-  }, []);
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      handleScroll();
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
 
   useEffect(() => {
     allImages.forEach((src) => {
@@ -472,80 +484,63 @@ function MobileDetailOverlay({ project, onClose }) {
 
   return (
     <div 
+      ref={containerRef}
       className={`mobile-detail-overlay ${isClosing ? 'closing' : ''}`}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="mobile-detail-container">
-        <header className="mobile-detail-header">
-          <div className="mobile-logo" onClick={handleClose}>
-            ESSENT.STUDIO
-          </div>
-        </header>
+      {/* 헤더는 메인페이지 헤더 사용 (숨김) */}
+      <div className="mobile-overlay-header">
+        <div className="overlay-logo" onClick={handleClose}>
+          ESSENT.STUDIO
+        </div>
+        <div style={{ width: '30px' }}></div>
+      </div>
 
-        <div 
-          ref={sliderRef}
-          className="mobile-slider-wrapper"
-          onScroll={handleScroll}
-        >
-          <div className="mobile-slider-track">
-            {allImages.length === 0 ? (
-              <div className="mobile-slide">
-                <div style={{ color: '#666' }}>No images</div>
-              </div>
-            ) : (
-              allImages.map((media, idx) => (
-                <div 
-                  key={idx} 
-                  className="mobile-slide"
-                >
-                  {isVideo(media) ? (
-                    <video 
-                      src={media} 
-                      autoPlay 
-                      muted 
-                      loop 
-                      playsInline
-                      preload="metadata"
-                    />
-                  ) : (
-                    <img 
-                      src={media} 
-                      alt={`${idx + 1}`} 
-                      draggable="false"
-                      loading={idx === 0 ? "eager" : "lazy"}
-                    />
-                  )}
-                </div>
-              ))
-            )}
-          </div>
+      {/* 컨텐츠 컨테이너 */}
+      <div className="mobile-detail-content">
+        {/* 이미지들 세로 나열 */}
+        <div className="mobile-images-vertical">
+          {allImages.map((src, idx) => (
+            <div key={idx} className="mobile-image-item">
+              {isVideo(src) ? (
+                <video 
+                  src={src}
+                  autoPlay 
+                  muted 
+                  loop 
+                  playsInline
+                />
+              ) : (
+                <img 
+                  src={src}
+                  alt={`${project.title} ${idx + 1}`}
+                  draggable="false"
+                />
+              )}
+            </div>
+          ))}
         </div>
 
-        {allImages.length > 1 && (
-          <div className="mobile-pagination">
-            {allImages.map((_, idx) => (
-              <div 
-                key={idx}
-                className={`mobile-dot ${idx === currentIndex ? 'active' : ''}`}
-              />
-            ))}
+        {/* 하단 정보 섹션 */}
+        <div ref={infoSectionRef} className="mobile-info-section">
+          <div className="mobile-info-header">
+            <div className="mobile-info-tags">
+              {project.category && (
+                <span className="mobile-tag primary">{project.category}</span>
+              )}
+            </div>
+            <h1 className="mobile-info-title">{project.title}</h1>
           </div>
-        )}
 
-        <div className="mobile-info">
-          <h1>{project.title}</h1>
-          <p className="mobile-description">
-            {project.desc || project.description}
-          </p>
-          
-          <div className="mobile-meta">
-            {project.date && (
-              <div className="mobile-meta-row">
-                <span className="mobile-meta-label">Date</span>
-                <span className="mobile-meta-value">{project.date}</span>
-              </div>
-            )}
+          {project.description && (
+            <>
+              <div className="mobile-info-divider" />
+              <p className="mobile-info-desc">{project.description}</p>
+            </>
+          )}
+
+          <div className="mobile-info-meta">
             {project.client && (
               <div className="mobile-meta-row">
                 <span className="mobile-meta-label">Client</span>
@@ -558,7 +553,30 @@ function MobileDetailOverlay({ project, onClose }) {
                 <span className="mobile-meta-value">{project.role}</span>
               </div>
             )}
+            {project.date && (
+              <div className="mobile-meta-row">
+                <span className="mobile-meta-label">Date</span>
+                <span className="mobile-meta-value">{project.date}</span>
+              </div>
+            )}
           </div>
+        </div>
+      </div>
+
+      {/* 🔥 하단 고정 정보박스 (블러박스) */}
+      <div 
+        className={`mobile-fixed-info ${showFixedInfo ? 'visible' : 'hidden'}`}
+      >
+        <div className="mobile-fixed-info-content">
+          <div className="mobile-fixed-tags">
+            {project.category && (
+              <span className="mobile-tag primary">{project.category}</span>
+            )}
+          </div>
+          <h2 className="mobile-fixed-title">{project.title}</h2>
+          {project.client && (
+            <p className="mobile-fixed-client">{project.client}</p>
+          )}
         </div>
       </div>
     </div>

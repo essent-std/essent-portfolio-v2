@@ -1,6 +1,6 @@
 @media (max-width: 768px) {
 
-  /* 1️⃣ 헤더 */
+  /* 1️⃣ 헤더 - 기본 */
   .header {
     position: fixed !important; 
     top: 0;
@@ -11,7 +11,15 @@
     justify-content: space-between;
     z-index: 205 !important; 
     background-color: #121212; 
-    border-bottom: 1px solid rgba(255,255,255,0.05); 
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
+  }
+
+  /* 🔥 디테일 페이지 열렸을 때 블러 효과 */
+  .header.detail-open {
+    background-color: rgba(18, 18, 18, 0.85) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
   }
 
   .logo { font-size: 20px !important; font-weight: 500; z-index: 206; }
@@ -52,6 +60,8 @@
   
   .hamburger-menu.open span:nth-child(1) { transform: translateY(4px) rotate(45deg); }
   .hamburger-menu.open span:nth-child(2) { transform: translateY(-4px) rotate(-45deg); }
+
+  /* 나머지 기존 코드 그대로... */
 
   /* 2️⃣ 레이아웃 */
   .container { flex-direction: column; padding-top: 50px; }
