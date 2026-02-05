@@ -11,6 +11,7 @@ import Upload from './Upload';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';  
 import Login from './Login';
+import SplashScreen from './SplashScreen';
 
 // ==============================================================================
 // 1. MainPage 컴포넌트
@@ -612,13 +613,24 @@ function DetailRouter() {
 // ==============================================================================
 // App 컴포넌트
 // ==============================================================================
+// ==============================================================================
+// App 컴포넌트 (수정됨)
+// ==============================================================================
 function App() {
   const [firestoreProjects, setFirestoreProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categoriesStd, setCategoriesStd] = useState([]);
   const [categoriesLab, setCategoriesLab] = useState([]);
+  
+  // 🔥 인트로 화면 상태 관리 (true면 인트로 보여줌)
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
+    // 새로고침 시 스크롤 최상단 이동
+    window.onbeforeunload = function pushRefresh() {
+      window.scrollTo(0, 0);
+    };
+
     const fetchData = async () => {
       try {
         const projectsSnapshot = await getDocs(collection(db, 'projects'));
@@ -645,21 +657,29 @@ function App() {
   }, []);
 
   return (
-    <Routes>
-      <Route path="/" element={
-        <MainPage 
-          firestoreProjects={firestoreProjects} 
-          loading={loading}
-          categoriesStd={categoriesStd}
-          categoriesLab={categoriesLab}
-        />
-      } />
-      <Route path="/project/:id" element={<DetailRouter />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/admin" element={<AdminPage />} />
-      <Route path="/upload" element={<Upload />} />
-    </Routes>
+    <>
+      {/* 🔥 showSplash가 true일 때 인트로 화면을 띄움 */}
+      {showSplash ? (
+        <SplashScreen onFinish={() => setShowSplash(false)} />
+      ) : (
+        /* 인트로가 끝나면 실제 앱(라우터)을 보여줌 */
+        <Routes>
+          <Route path="/" element={
+            <MainPage 
+              firestoreProjects={firestoreProjects} 
+              loading={loading}
+              categoriesStd={categoriesStd}
+              categoriesLab={categoriesLab}
+            />
+          } />
+          <Route path="/project/:id" element={<DetailRouter />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/upload" element={<Upload />} />
+        </Routes>
+      )}
+    </>
   );
 }
-  
+
 export default App;
